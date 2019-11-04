@@ -4,50 +4,71 @@
 %%
 -module({{appid}}_server).
 -behaviour(gen_server).
+-include_lib("kernel/include/logger.hrl").
+
+-record(gen_server_data, {
+  id1   :: non_neg_integer(),
+  id2   :: non_neg_integer(),
+  id3   :: non_neg_integer()
+}).
+
+%%====================================================================
+%% API functions
+%%====================================================================
+-export([start_link/0, start_link/1]).
+
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2,
+         terminate/2, code_change/3]).
+
+%%--------------------------------------------------------------------
+%% Definitions
+%%--------------------------------------------------------------------
+
 -define(SERVER, ?MODULE).
 
-%% ~~~~~~~~~~~~~~~~~~~~
-%% API Function Exports
-%% ~~~~~~~~~~~~~~~~~~~~
-
--export([start_link/0]).
-
-%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%% gen_server Function Exports
-%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
-
-%% ~~~~~~~~~~~~~~~~~~~~~~~~
-%% API Function Definitions
-%% ~~~~~~~~~~~~~~~~~~~~~~~~
-
+%%%===================================================================
+%%% INTERFACE API
+%%%===================================================================
 start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
-%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%% gen_server Function Definitions
-%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+start_link([Id1,Id2,Id3]) ->
+  ?LOG_INFO("Gen-Server Start Link: ~p.~p.~p", [Id1,Id2,Id3]),
+  GenServerName = {{appid}}_sup:compose_gen_server_name(Id1,Id2,Id3),
+  gen_server:start_link({local, GenServerName}, ?MODULE, [Id1,Id2,Id3], []).
 
-init(Args) ->
-    {ok, Args}.
+%%====================================================================
+%% gen_server callbacks
+%%====================================================================
+init([Id1,Id2,Id3]) ->
+  logger:set_module_level(?MODULE,all),
+  ?LOG_INFO("Gen-Server Init: ~p.~p.~p", [Id1,Id2,Id3]),
+  GenServerData = #gen_server_data { id1 = Id1,
+                                     id2 = Id2,
+                                     id3 = Id3 },
+% comment this line to stop trapping exits
+  process_flag(trap_exit, true), % comment this line to stop trapping exits
+  {ok, GenServerData}.
 
-handle_call(_Request, _From, State) ->
-    {noreply, ok, State}.
+handle_cast(Msg, State) ->
+  ?LOG_INFO(#{handle => unknown_cast, msg => Msg}),
+  {noreply, State}.
 
-handle_cast(_Msg, State) ->
-    {noreply, State}.
+handle_call(Msg, _From, State) ->
+  ?LOG_INFO(#{handle => unknown_call, msg => Msg}),
+  {noreply, State}.
 
-handle_info(_Info, State) ->
-    {noreply, State}.
+handle_info(Info, State) ->
+  ?LOG_INFO(#{handle => unknown_info, msg => Info}),
+  {noreply, State}.
 
-terminate(_Reason, _State) ->
-    ok.
+%% @private
+terminate(_Reason, State) ->
+  ?LOG_INFO("Gen-Server Terminate: ~p.~p.~p", [State#gen_server_data.id1,
+                                               State#gen_server_data.id2,
+                                               State#gen_server_data.id3]),
+  ok.
 
+%% @private
 code_change(_OldVsn, State, _Extra) ->
-    {ok, State}.
-
-%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%% Internal Function Definitions
-%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+  {ok, State}.
