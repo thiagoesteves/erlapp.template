@@ -1,9 +1,9 @@
 *.beam
 .eunit
 deps/*
-apps/{{appid}}/ebin
+apps/myapp/ebin
 dev/*
-rel/{{nodeid}}
+rel/
 .rebar/
 Makefile
 ebin/*

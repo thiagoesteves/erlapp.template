@@ -4,7 +4,7 @@ APP = {{appid}}
 
 default: compile
 
-all: deps compile sync
+all: deps compile sync folsom gproc
 
 compile:
 	$(REBAR) compile
@@ -20,9 +20,15 @@ generate:
 	chmod u+x rel/$(APP)/bin/$(APP)
 
 sync:
-	cd dev/sync && make && cd -
+	cd dev/sync && $(REBAR) get-deps compile && cd -
 
-distclean: clean 
+folsom:
+	cd dev/folsom && $(REBAR) get-deps compile && cd -
+
+gproc:
+	cd dev/gproc && $(REBAR) get-deps compile && cd -
+
+distclean: clean
 	$(REBAR) delete-deps
 
 console:
@@ -42,4 +48,3 @@ dialyzer: compile
 	@dialyzer -Wno_return -c apps/$(APP)/ebin
 
 .PHONY: deps
-

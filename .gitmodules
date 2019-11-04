@@ -1,3 +1,9 @@
 [submodule "sync"]
   path = erlapp.dev/sync
   url = https://github.com/rustyio/sync.git
+[submodule "folsom"]
+	path = erlapp.dev/folsom
+	url = https://github.com/folsom-project/folsom.git
+[submodule "gproc"]
+	path = erlapp.dev/gproc
+	url = https://github.com/uwiger/gproc.git
